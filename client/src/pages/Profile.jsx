@@ -1,18 +1,24 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { FriendsCard, Loading, PostCard, ProfileCard, TopBar } from "../components";
 import { posts } from "../assets/data";
+import { get_post } from "../redux/postSlice";
 
 const Profile = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.user);
+  const { UserPost } = useSelector((state) => state.posts);
   const [userInfo, setUserInfo] = useState(user);
   const [loading, setLoading] = useState(false);
 
   const handleDelete = () => {};
   const handleLikePost = () => {};
+
+  useEffect(() => {
+    dispatch(get_post(id));
+  }, []);
 
   return (
     <>
@@ -32,8 +38,8 @@ const Profile = () => {
           <div className=" flex-1 h-full bg-orimary px-4 flex flex-col gap-6 overflow-y-auto">
             {loading ? (
               <Loading />
-            ) : posts?.length > 0 ? (
-              posts?.map((post) => (
+            ) : UserPost?.length > 0 ? (
+              UserPost?.map((post) => (
                 <PostCard
                   post={post}
                   key={post?._id}

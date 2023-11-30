@@ -10,16 +10,18 @@ import {
   TextInput,
   TopBar,
 } from "../components";
-import { suggest, requests, posts } from "../assets/data";
+import { suggest, requests } from "../assets/data";
 import { Link } from "react-router-dom";
 import { NoProfile } from "../assets";
 import { BsFiletypeGif, BsPersonFillAdd } from "react-icons/bs";
 import { BiImages, BiSolidVideo } from "react-icons/bi";
 import { useForm } from "react-hook-form";
 import { get_User } from "../redux/userSlice";
+import { create_post, get_posts } from "../redux/postSlice";
 
 const Home = () => {
   const { userDetails, edit } = useSelector((state) => state.user);
+  const { posts } = useSelector((state) => state.posts);
   const [friendRequest, setFriendRequest] = useState(requests);
   const [suggestedFriends, setSuggestedFriends] = useState(suggest);
   const dispatch = useDispatch();
@@ -40,11 +42,14 @@ const Home = () => {
   const handlePostSubmit = async (data) => {
     const newData = data;
     const fromData = new FormData();
-    fromData.append("firstName", newData?.firstName);
-    fromData.append("userId", userDetails._id);
-    fromData.append("image", picture);
-    dispatch(update_user(fromData));
+    fromData.append("description", newData?.description);
+    fromData.append("image", file);
+    dispatch(create_post(fromData));
   };
+
+  useEffect(() => {
+    dispatch(get_posts());
+  }, []);
 
   return (
     <>

@@ -124,6 +124,7 @@ const PostCard = ({ post, user, deletePost, likePost }) => {
   };
   const handleLike = async () => {};
 
+
   return (
     <div className="mb-2 bg-primary p-4 rounded-xl">
       <div className="flex gap-3 items-center mb-2">
@@ -168,7 +169,7 @@ const PostCard = ({ post, user, deletePost, likePost }) => {
             ))}
         </p>
 
-        {post?.image && <img src={post?.image} alt="post image" className="w-full mt-2 rounded-lg" />}
+        {post?.image && <img src={post?.image} alt="post_image" className="w-full mt-2 rounded-lg" />}
       </div>
 
       <div

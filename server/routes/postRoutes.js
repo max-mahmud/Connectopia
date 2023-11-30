@@ -19,7 +19,7 @@ const router = express.Router();
 router.post("/create-post", authMiddleware, createPost);
 // get posts
 router.post("/", authMiddleware, getPosts);
-router.post("/:id", authMiddleware, getPost);
+// router.post("/:id", authMiddleware, getPost);
 
 router.post("/get-user-post/:id", authMiddleware, getUserPost);
 

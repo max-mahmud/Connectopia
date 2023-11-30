@@ -1,41 +1,71 @@
 import Comments from "../models/commentModel.js";
 import Posts from "../models/postModel.js";
 import Users from "../models/userModel.js";
+import cloudinary from "cloudinary";
+import formidable from "formidable";
 
 export const createPost = async (req, res, next) => {
-  try {
-    const { userId } = req.body.user;
-    console.log(userId);
-    const { description, image } = req.body;
+  const {
+    user: { userId },
+  } = req;
 
-    if (!description) {
-      next("You must provide a description");
-      return;
+  const form = formidable();
+  form.parse(req, async (err, fields, files) => {
+    if (err) {
+      res.status(404).json({ message: "error from formidabble line 63" });
+    } else {
+      let { description } = fields;
+      let { image } = files;
+
+      // if (!description[0]) {
+      //   next("You must provide a description");
+      //   return;
+      // }
+      cloudinary.config({
+        cloud_name: process.env.cloud_name,
+        api_key: process.env.api_key,
+        api_secret: process.env.api_secret,
+        secure: true,
+      });
+      try {
+        const result = await cloudinary.uploader.upload(image[0].filepath, {
+          folder: "socials",
+        });
+
+        if (result) {
+          const post = await Posts.create({
+            description: description[0],
+            image: result.url,
+            userId,
+          });
+          // console.log(post);
+          res.status(200).json({
+            sucess: true,
+            message: "Post created successfully",
+            data: post,
+          });
+        } else {
+          res.status(400).json({
+            sucess: false,
+            message: "Image upload failed",
+          });
+        }
+      } catch (error) {
+        console.log(error);
+        res.status(404).json({ message: error.message });
+      }
     }
-
-    const post = await Posts.create({
-      userId,
-      description,
-      image,
-    });
-
-    res.status(200).json({
-      sucess: true,
-      message: "Post created successfully",
-      data: post,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(404).json({ message: error.message });
-  }
+  });
 };
 
 //Get Posts
 export const getPosts = async (req, res, next) => {
   try {
-    const { userId } = req.body.user;
+    const {
+      user: { userId },
+    } = req;
     const { search } = req.body;
-
+    // console.log(search);
     const user = await Users.findById(userId);
     const friends = user?.friends?.toString().split(",") ?? [];
     friends.push(userId);
@@ -80,6 +110,7 @@ export const getPosts = async (req, res, next) => {
   }
 };
 
+//? akhane kono kaj kora hoini
 export const getPost = async (req, res, next) => {
   try {
     const { id } = req.params;
