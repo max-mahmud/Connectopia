@@ -3,7 +3,6 @@ import dotenv from "dotenv";
 import cors from "cors";
 import bodyParser from "body-parser";
 
-import helmet from "helmet";
 import dbConnection from "./dbConfig/index.js";
 import router from "./routes/index.js";
 
@@ -12,7 +11,6 @@ const app = express();
 const PORT = process.env.PORT || 8800;
 dbConnection();
 
-app.use(helmet());
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
