@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { Link, Navigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
 import { TbSocial } from "react-icons/tb";
 import { BsShare } from "react-icons/bs";
@@ -8,8 +8,14 @@ import { AiOutlineInteraction } from "react-icons/ai";
 import { ImConnection } from "react-icons/im";
 import { CustomButton, Loading, TextInput } from "../components";
 import { BgImage } from "../assets";
+import { user_register } from "../redux/userSlice";
 
 const Register = () => {
+  const [errMsg, setErrMsg] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { token } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+
   const {
     register,
     handleSubmit,
@@ -19,11 +25,13 @@ const Register = () => {
     mode: "onChange",
   });
 
-  const onSubmit = async (data) => {};
+  const onSubmit = async (data) => {
+    dispatch(user_register(data));
+  };
 
-  const [errMsg, setErrMsg] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const dispatch = useDispatch();
+  if (token) {
+    return <Navigate to={"/"} replace={true} />;
+  }
 
   return (
     <div className="bg-bgColor w-full h-[100vh] flex items-center justify-center p-6">
@@ -34,9 +42,7 @@ const Register = () => {
             <div className="p-2 bg-[#065ad8] rounded text-white">
               <TbSocial />
             </div>
-            <span className="text-2xl text-[#065ad8] " font-semibold>
-              Connectopia
-            </span>
+            <span className="text-2xl text-[#065ad8] font-semibold">Connectopia</span>
           </div>
 
           <p className="text-ascent-1 text-base font-semibold">Create your account</p>

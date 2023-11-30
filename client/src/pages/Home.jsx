@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useSelector } from "react-redux";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   CustomButton,
   EditProfile,
@@ -16,11 +16,13 @@ import { NoProfile } from "../assets";
 import { BsFiletypeGif, BsPersonFillAdd } from "react-icons/bs";
 import { BiImages, BiSolidVideo } from "react-icons/bi";
 import { useForm } from "react-hook-form";
+import { get_User } from "../redux/userSlice";
 
 const Home = () => {
-  const { user, edit } = useSelector((state) => state.user);
+  const { userDetails, edit } = useSelector((state) => state.user);
   const [friendRequest, setFriendRequest] = useState(requests);
   const [suggestedFriends, setSuggestedFriends] = useState(suggest);
+  const dispatch = useDispatch();
   const [errMsg, setErrMsg] = useState("");
   const [file, setFile] = useState(null);
   const [posting, setPosting] = useState(false);
@@ -31,7 +33,19 @@ const Home = () => {
     formState: { errors },
   } = useForm();
 
-  const handlePostSubmit = async (data) => {};
+  useEffect(() => {
+    dispatch(get_User());
+  }, []);
+
+  const handlePostSubmit = async (data) => {
+    const newData = data;
+    const fromData = new FormData();
+    fromData.append("firstName", newData?.firstName);
+    fromData.append("userId", userDetails._id);
+    fromData.append("image", picture);
+    dispatch(update_user(fromData));
+  };
+
   return (
     <>
       <div className="w-full px-0 lg:px-10 md:pb-12 pb-2 2xl:px-40 bg-bgColor lg:rounded-lg h-screen overflow-hidden">
@@ -39,8 +53,8 @@ const Home = () => {
         <div className="w-full flex gap-2 lg:gap-4 pt-2 pb-10 h-full">
           {/* LEFT SIDE*/}
           <div className="hidden w-1/3 lg:w-1/4 h-full md:flex flex-col gap-6 overflow-y-auto">
-            <ProfileCard user={user} />
-            <FriendsCard friends={user?.friends} />
+            <ProfileCard userDetails={userDetails} />
+            <FriendsCard friends={userDetails?.friends} />
           </div>
 
           {/* CENTER */}
@@ -48,7 +62,7 @@ const Home = () => {
             <form onSubmit={handleSubmit(handlePostSubmit)} className="bg-primary px-4 rounded-lg">
               <div className="w-full flex items-center gap-2 py-4 border-b border-[#66666645]">
                 <img
-                  src={user?.profileUrl ?? NoProfile}
+                  src={userDetails?.profileUrl ?? NoProfile}
                   alt="User_Image"
                   className="w-14 h-14 rounded-full object-cover"
                 />
@@ -140,7 +154,13 @@ const Home = () => {
               <Loading />
             ) : posts?.length > 0 ? (
               posts?.map((post) => (
-                <PostCard key={post?._id} post={post} user={user} deletePost={() => {}} likePost={() => {}} />
+                <PostCard
+                  key={post?._id}
+                  post={post}
+                  user={userDetails}
+                  deletePost={() => {}}
+                  likePost={() => {}}
+                />
               ))
             ) : (
               <div className="flex w-full h-full items-center justify-center">

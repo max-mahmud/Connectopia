@@ -1,18 +1,39 @@
 import Users from "../models/userModel.js";
 import FriendRequest from "../models/friendRequest.js";
+import mongoose from "mongoose";
+import cloudinary from "cloudinary";
+import formidable from "formidable";
+
+const { ObjectId } = mongoose.Types;
 
 export const getUser = async (req, res, next) => {
   try {
-    const { userId } = req.body.user;
+    const userId = req.user.userId;
     const { id } = req.params;
 
-    const user = await Users.findById(id ?? userId).populate({
+    let targetId;
+
+    // Check if id is provided and it's a valid ObjectId
+    if (id && ObjectId.isValid(id)) {
+      targetId = id;
+    } else {
+      targetId = userId;
+    }
+
+    if (!targetId) {
+      return res.status(400).send({
+        message: "Invalid User ID provided",
+        success: false,
+      });
+    }
+
+    const user = await Users.findById(targetId).populate({
       path: "friends",
       select: "-password",
     });
 
     if (!user) {
-      return res.status(200).send({
+      return res.status(404).send({
         message: "User Not Found",
         success: false,
       });
@@ -27,51 +48,65 @@ export const getUser = async (req, res, next) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({
-      message: "auth error",
+      message: "Error occurred while fetching user",
       success: false,
       error: error.message,
     });
   }
 };
-
 export const updateUser = async (req, res, next) => {
-  try {
-    const { firstName, lastName, location, profileUrl, profession } = req.body;
+  const form = formidable();
+  form.parse(req, async (err, fields, files) => {
+    if (err) {
+      res.status(404).json({ message: "error from formidabble line 63" });
+    } else {
+      let { firstName, lastName, location, profession, userId } = fields;
+      let { image } = files;
 
-    if (!(firstName || lastName || contact || profession || location)) {
-      next("Please provide all required fields");
-      return;
+      cloudinary.config({
+        cloud_name: process.env.cloud_name,
+        api_key: process.env.api_key,
+        api_secret: process.env.api_secret,
+        secure: true,
+      });
+      try {
+        const result = await cloudinary.uploader.upload(image[0].filepath, {
+          folder: "socials",
+        });
+        const updateUser = {
+          firstName: firstName[0],
+          lastName: lastName[0],
+          location: location[0],
+          profileUrl: result.url,
+          profession: profession[0],
+          _id: userId[0],
+        };
+
+        if (result) {
+          const user = await Users.findByIdAndUpdate(userId, updateUser, {
+            new: true,
+          });
+          res.status(200).json({
+            sucess: true,
+            message: "User updated successfully",
+            user,
+          });
+        } else {
+          res.status(400).json({
+            sucess: false,
+            message: "Image upload failed",
+          });
+        }
+      } catch (error) {
+        console.log(error);
+        res.status(500).json({
+          message: "auth error",
+          success: false,
+          error: error.message,
+        });
+      }
     }
-
-    const { userId } = req.body.user;
-
-    const updateUser = {
-      firstName,
-      lastName,
-      location,
-      profileUrl,
-      profession,
-      _id: userId,
-    };
-    const user = await Users.findByIdAndUpdate(userId, updateUser, {
-      new: true,
-    });
-
-    await user.populate({ path: "friends", select: "-password" });
-    const token = createJWT(user?._id);
-
-    user.password = undefined;
-
-    res.status(200).json({
-      sucess: true,
-      message: "User updated successfully",
-      user,
-      token,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(404).json({ message: error.message });
-  }
+  });
 };
 
 export const friendRequest = async (req, res, next) => {

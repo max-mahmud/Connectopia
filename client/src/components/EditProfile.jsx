@@ -5,15 +5,14 @@ import { useDispatch, useSelector } from "react-redux";
 import TextInput from "./TextInput";
 import Loading from "./Loading";
 import CustomButton from "./CustomButton";
-import { UpdateProfile } from "../redux/userSlice";
+import { update_user } from "../redux/userSlice";
 
-const EditProfile = () => {
-  const { user } = useSelector((state) => state.user);
+const EditProfile = ({ show, setShow }) => {
+  const { user, userDetails } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const [errMsg, setErrMsg] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [picture, setPicture] = useState(null);
-
   const {
     register,
     handleSubmit,
@@ -23,11 +22,19 @@ const EditProfile = () => {
     defaultValues: { ...user },
   });
 
-  const onSubmit = async (data) => {};
-
-  const handleClose = () => {
-    dispatch(UpdateProfile(false));
+  const onSubmit = async (data) => {
+    console.log(userDetails._id);
+    const newData = data;
+    const fromData = new FormData();
+    fromData.append("firstName", newData?.firstName);
+    fromData.append("lastName", newData?.lastName);
+    fromData.append("location", newData?.location);
+    fromData.append("profession", newData?.profession);
+    fromData.append("userId", userDetails._id);
+    fromData.append("image", picture);
+    dispatch(update_user(fromData));
   };
+  // firstName, lastName, location, profession, userId
   const handleSelect = (e) => {
     setPicture(e.target.files[0]);
   };
@@ -52,7 +59,7 @@ const EditProfile = () => {
                 Edit Profile
               </label>
 
-              <button className="text-ascent-1" onClick={handleClose}>
+              <button className="text-ascent-1" onClick={() => setShow(!show)}>
                 <MdClose size={22} />
               </button>
             </div>

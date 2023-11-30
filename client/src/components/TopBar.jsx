@@ -1,18 +1,18 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { TbSocial } from "react-icons/tb";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import TextInput from "./TextInput";
 import CustomButton from "./CustomButton";
 import { useForm } from "react-hook-form";
 import { BsMoon, BsSunFill } from "react-icons/bs";
 import { IoMdNotificationsOutline } from "react-icons/io";
 import { SetTheme } from "../redux/theme";
-import { Logout } from "../redux/userSlice";
+import { logout } from "./../redux/userSlice";
 
 const TopBar = () => {
   const { theme } = useSelector((state) => state.theme);
-  const { user } = useSelector((state) => state.user);
+  const { token, successMessage } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const {
     register,
@@ -27,6 +27,12 @@ const TopBar = () => {
   };
 
   const handleSearch = async (data) => {};
+
+  useEffect(() => {
+    if (!token) {
+      <Navigate to={"/login"} replace={true} />;
+    }
+  }, [successMessage, dispatch]);
 
   return (
     <div className="topbar w-full flex items-center justify-between py-2 md:py-4 px-4 bg-primary">
@@ -59,7 +65,7 @@ const TopBar = () => {
 
         <div>
           <CustomButton
-            onClick={() => dispatch(Logout())}
+            onClick={() => dispatch(logout())}
             title="Log Out"
             containerStyles="text-sm text-ascent-1 px-4 md:px-6 py-1 md:py-2 border border-[#666] rounded-full"
           />
