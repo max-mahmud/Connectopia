@@ -26,7 +26,6 @@ export const create_post = createAsyncThunk(
 export const get_posts = createAsyncThunk(
   "user/get_posts",
   async (info, { rejectWithValue, fulfillWithValue, getState }) => {
-    console.log(info);
     const { token } = getState().user;
     if (!token) {
       return rejectWithValue({ message: "Token is missing" });
@@ -66,6 +65,49 @@ export const get_post = createAsyncThunk(
     }
   }
 );
+export const delete_postt = createAsyncThunk(
+  "user/delete_postt",
+  async (id, { rejectWithValue, fulfillWithValue, getState }) => {
+    const { token } = getState().user;
+    if (!token) {
+      return rejectWithValue({ message: "Token is missing" });
+    }
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+    try {
+      const { data } = await axios.delete(`${baseURL}/post/${id}`, null, config);
+      return fulfillWithValue(data);
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+// export const delete_post = createAsyncThunk(
+//   "user/delete_post",
+//   async (id, { rejectWithValue, fulfillWithValue, getState }) => {
+//     console.log(id);
+//     const { token } = getState().user;
+//     if (!token) {
+//       return rejectWithValue({ message: "Token is missing" });
+//     }
+//     const config = {
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//       },
+//     };
+
+//     try {
+//       const { data } = await axios.delete(`${baseURL}/post/${id}`, id, config);
+//       return fulfillWithValue(data);
+//     } catch (error) {
+//       return rejectWithValue(error.response.data);
+//     }
+//   }
+// );
 
 const initialState = {
   posts: {},

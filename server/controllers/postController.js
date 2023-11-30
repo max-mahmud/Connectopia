@@ -17,10 +17,10 @@ export const createPost = async (req, res, next) => {
       let { description } = fields;
       let { image } = files;
 
-      // if (!description[0]) {
-      //   next("You must provide a description");
-      //   return;
-      // }
+      if (!description[0]) {
+        next("You must provide a description");
+        return;
+      }
       cloudinary.config({
         cloud_name: process.env.cloud_name,
         api_key: process.env.api_key,
@@ -156,7 +156,7 @@ export const getUserPost = async (req, res, next) => {
 export const commentPost = async (req, res, next) => {
   try {
     const { comment, from } = req.body;
-    const { userId } = req.body.user;
+    const userId = req.user.userId;
     const { id } = req.params;
 
     if (comment === null) {
@@ -331,7 +331,6 @@ export const replyPostComment = async (req, res, next) => {
 export const deletePost = async (req, res, next) => {
   try {
     const { id } = req.params;
-
     await Posts.findByIdAndDelete(id);
 
     res.status(200).json({

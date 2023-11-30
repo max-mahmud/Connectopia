@@ -66,6 +66,112 @@ export const update_user = createAsyncThunk(
     }
   }
 );
+export const suggested_friends = createAsyncThunk(
+  "user/suggested_friends",
+  async (_, { rejectWithValue, fulfillWithValue, getState }) => {
+    const { token } = getState().user;
+    if (!token) {
+      return rejectWithValue({ message: "Token is missing" });
+    }
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+    try {
+      const { data } = await axios.post(`${baseURL}/user/suggested-friends`, _, config);
+      return fulfillWithValue(data);
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+export const friend_request = createAsyncThunk(
+  "user/friend_request",
+  async (frnId, { rejectWithValue, fulfillWithValue, getState }) => {
+    const { token } = getState().user;
+    if (!token) {
+      return rejectWithValue({ message: "Token is missing" });
+    }
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+    try {
+      const { data } = await axios.post(`${baseURL}/user/friend-request`, frnId, config);
+      return fulfillWithValue(data);
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+export const get_friend_request = createAsyncThunk(
+  "user/get_friend_request",
+  async (_, { rejectWithValue, fulfillWithValue, getState }) => {
+    const { token } = getState().user;
+    if (!token) {
+      return rejectWithValue({ message: "Token is missing" });
+    }
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+    try {
+      const { data } = await axios.post(`${baseURL}/user/get-friend-request`, _, config);
+      return fulfillWithValue(data);
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+export const accept_request = createAsyncThunk(
+  "user/accept_request",
+  async (info, { rejectWithValue, fulfillWithValue, getState }) => {
+    const { token } = getState().user;
+    if (!token) {
+      return rejectWithValue({ message: "Token is missing" });
+    }
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+    try {
+      const { data } = await axios.post(`${baseURL}/user/accept-request`, info, config);
+      return fulfillWithValue(data);
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+export const profile_view = createAsyncThunk(
+  "user/profile_view",
+  async (id, { rejectWithValue, fulfillWithValue, getState }) => {
+    const { token } = getState().user;
+    if (!token) {
+      return rejectWithValue({ message: "Token is missing" });
+    }
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+    try {
+      const { data } = await axios.post(`${baseURL}/user/profile-view`, id, config);
+      return fulfillWithValue(data);
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
 
 const storedUser = window?.localStorage.getItem("user");
 const initialState = {
@@ -74,7 +180,8 @@ const initialState = {
   successMessage: "",
   errorMessage: "",
   loader: false,
-
+  suggetedFriends: "",
+  friendRequest: "",
   userDetails: "",
 };
 
@@ -102,6 +209,15 @@ const userSlice = createSlice({
     },
     [get_User.fulfilled]: (state, { payload }) => {
       state.userDetails = payload.user;
+    },
+    [suggested_friends.fulfilled]: (state, { payload }) => {
+      state.suggetedFriends = payload.data;
+    },
+    [get_friend_request.fulfilled]: (state, { payload }) => {
+      state.friendRequest = payload.data;
+    },
+    [accept_request.fulfilled]: (state, { payload }) => {
+      state.successMessage = payload.message;
     },
   },
 });

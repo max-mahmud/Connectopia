@@ -111,8 +111,10 @@ export const updateUser = async (req, res, next) => {
 
 export const friendRequest = async (req, res, next) => {
   try {
-    const { userId } = req.body.user;
+    const userId = req.user.userId;
     const { requestTo } = req.body;
+    // mySelf =>requestFrom
+    // friend =>requestTo
     const requestExist = await FriendRequest.findOne({
       requestFrom: userId,
       requestTo,
@@ -154,7 +156,7 @@ export const friendRequest = async (req, res, next) => {
 
 export const getFriendRequest = async (req, res) => {
   try {
-    const { userId } = req.body.user;
+    const userId = req.user.userId;
 
     const request = await FriendRequest.find({
       requestTo: userId,
@@ -185,37 +187,45 @@ export const getFriendRequest = async (req, res) => {
 
 export const acceptRequest = async (req, res, next) => {
   try {
-    const id = req.body.user.userId;
-
+    const id = req.user.userId;
     const { rid, status } = req.body;
 
     const requestExist = await FriendRequest.findById(rid);
-
+    // console.log(requestExist);
     if (!requestExist) {
-      next("No Friend Request Found.");
-      return;
+      return res.status(404).json({ message: "No Friend Request Found." });
     }
 
-    const newRes = await FriendRequest.findByIdAndUpdate({ _id: rid }, { requestStatus: status });
+    // Update the friend request status
+    const updatedRequest = await FriendRequest.findByIdAndUpdate(
+      { _id: rid },
+      { requestStatus: status },
+      { new: true }
+    );
 
     if (status === "Accepted") {
       const user = await Users.findById(id);
-      user.friends.push(newRes?.requestFrom);
+      user.friends.push(updatedRequest?.requestFrom);
       await user.save();
 
-      const friend = await Users.findById(newRes?.requestFrom);
-      friend.friends.push(newRes?.requestTo);
+      const friend = await Users.findById(updatedRequest?.requestFrom);
+      friend.friends.push(updatedRequest?.requestTo);
       await friend.save();
+    }
+
+    // Delete the request if it's accepted or denied
+    if (status === "Accepted" || status === "Denied") {
+      await FriendRequest.findByIdAndDelete(rid);
     }
 
     res.status(201).json({
       success: true,
-      message: "Friend Request " + status,
+      message: `Friend Request ${status}`,
     });
   } catch (error) {
     console.log(error);
     res.status(500).json({
-      message: "auth error",
+      message: "Error handling friend request",
       success: false,
       error: error.message,
     });
@@ -224,17 +234,18 @@ export const acceptRequest = async (req, res, next) => {
 
 export const profileViews = async (req, res, next) => {
   try {
-    const { userId } = req.body.user;
+    const userId = req.user.userId;
     const { id } = req.body;
+    if (userId !== id) {
+      const user = await Users.findById(id);
+      user.views.push(userId);
+      await user.save();
 
-    const user = await Users.findById(id);
-    user.views.push(userId);
-    await user.save();
-
-    res.status(201).json({
-      success: true,
-      message: "Successfully",
-    });
+      res.status(201).json({
+        success: true,
+        message: "Successfully",
+      });
+    }
   } catch (error) {
     console.log(error);
     res.status(500).json({
@@ -247,7 +258,7 @@ export const profileViews = async (req, res, next) => {
 
 export const suggestedFriends = async (req, res) => {
   try {
-    const { userId } = req.body.user;
+    const userId = req.user.userId;
 
     let queryObject = {};
     queryObject._id = { $ne: userId }; //not equal ($ne)

@@ -4,13 +4,14 @@ import { useParams } from "react-router-dom";
 import { FriendsCard, Loading, PostCard, ProfileCard, TopBar } from "../components";
 import { posts } from "../assets/data";
 import { get_post } from "../redux/postSlice";
+import { profile_view } from "../redux/userSlice";
 
 const Profile = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.user);
+  const { userDetails } = useSelector((state) => state.user);
   const { UserPost } = useSelector((state) => state.posts);
-  const [userInfo, setUserInfo] = useState(user);
+  const [userInfo, setUserInfo] = useState(userDetails);
   const [loading, setLoading] = useState(false);
 
   const handleDelete = () => {};
@@ -18,7 +19,12 @@ const Profile = () => {
 
   useEffect(() => {
     dispatch(get_post(id));
+    dispatch(profile_view({ id: id }));
   }, []);
+
+  // useEffect(() => {
+  //   dispatch(get_post(id));
+  // }, []);
 
   return (
     <>
@@ -43,7 +49,7 @@ const Profile = () => {
                 <PostCard
                   post={post}
                   key={post?._id}
-                  user={user}
+                  user={userDetails}
                   deletePost={handleDelete}
                   likePost={handleLikePost}
                 />

@@ -9,6 +9,8 @@ import TextInput from "./TextInput";
 import Loading from "./Loading";
 import CustomButton from "./CustomButton";
 import { postComments } from "../assets/data";
+import { delete_postt } from "../redux/postSlice";
+import { useDispatch } from "react-redux";
 
 const ReplyCard = ({ reply, user, handleLike }) => {
   return (
@@ -115,6 +117,7 @@ const PostCard = ({ post, user, deletePost, likePost }) => {
   const [loading, setLoading] = useState(false);
   const [replyComments, setReplyComments] = useState(0);
   const [showComments, setShowComments] = useState(0);
+  const dispatch = useDispatch();
 
   const getComments = async () => {
     setReplyComments(0);
@@ -123,7 +126,6 @@ const PostCard = ({ post, user, deletePost, likePost }) => {
     setLoading(false);
   };
   const handleLike = async () => {};
-
 
   return (
     <div className="mb-2 bg-primary p-4 rounded-xl">
@@ -195,7 +197,7 @@ const PostCard = ({ post, user, deletePost, likePost }) => {
         {user?._id === post?.userId?._id && (
           <div
             className="flex gap-1 items-center text-base text-ascent-1 cursor-pointer"
-            onClick={() => deletePost(post?._id)}
+            onClick={() => dispatch(delete_postt(post?._id))}
           >
             <MdOutlineDeleteOutline size={20} />
             <span>Delete</span>

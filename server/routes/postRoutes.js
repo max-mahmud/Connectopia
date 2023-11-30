@@ -15,12 +15,12 @@ import {
 
 const router = express.Router();
 
-// crete post
+// crete post =done
 router.post("/create-post", authMiddleware, createPost);
-// get posts
+// get posts =done
 router.post("/", authMiddleware, getPosts);
 // router.post("/:id", authMiddleware, getPost);
-
+//done
 router.post("/get-user-post/:id", authMiddleware, getUserPost);
 
 //like and comment on posts
@@ -32,7 +32,7 @@ router.post("/reply-comment/:id", authMiddleware, replyPostComment);
 // get comments
 router.get("/comments/:postId", getComments);
 
-//delete post
-router.delete("/:id", authMiddleware, deletePost);
+//delete post=done
+router.delete("/:id", deletePost);
 
 export default router;
