@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
 import { TbSocial } from "react-icons/tb";
 import { BsShare } from "react-icons/bs";
@@ -8,11 +8,13 @@ import { AiOutlineInteraction } from "react-icons/ai";
 import { ImConnection } from "react-icons/im";
 import { CustomButton, Loading, TextInput } from "../components";
 import { BgImage } from "../assets";
-import { user_login } from "../redux/userSlice";
+import { messageClear, user_login } from "../redux/userSlice";
+import { toast } from "react-hot-toast";
 
 const Login = ({ token }) => {
   const [errMsg, setErrMsg] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { successMessage, errorMessage } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const {
     register,
@@ -25,6 +27,17 @@ const Login = ({ token }) => {
   const onSubmit = async (data) => {
     dispatch(user_login(data));
   };
+
+  useEffect(() => {
+    if (successMessage) {
+      toast.success(successMessage);
+      dispatch(messageClear());
+    }
+    if (errorMessage) {
+      toast.error(errorMessage);
+      dispatch(messageClear());
+    }
+  }, [successMessage, errorMessage]);
 
   if (token) {
     return <Navigate to={"/"} replace={true} />;
@@ -64,7 +77,7 @@ const Login = ({ token }) => {
               label="Password"
               placeholder="Password"
               type="password"
-              styles="w-full rounded-full"
+              styles="w-full rounded-full mb-4"
               labelStyle="ml-2"
               register={register("password", {
                 required: "Password is required!",
@@ -72,9 +85,9 @@ const Login = ({ token }) => {
               error={errors.password ? errors.password?.message : ""}
             />
 
-            <Link to="/reset-password" className="text-sm text-right text-blue font-semibold">
+            {/* <Link to="/reset-password" className="text-sm text-right text-blue font-semibold">
               Forgot Password ?
-            </Link>
+            </Link> */}
 
             {errMsg?.message && (
               <span

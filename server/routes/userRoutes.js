@@ -6,12 +6,14 @@ import {
   getUser,
   profileViews,
   suggestedFriends,
+  userDetails,
   updateUser,
 } from "../controllers/userController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 // user routes
+router.get("/user-details", authMiddleware, userDetails);
 router.post("/get-user/:id?", authMiddleware, getUser);
 router.put("/update-user", authMiddleware, updateUser);
 

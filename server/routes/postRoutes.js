@@ -7,7 +7,6 @@ import {
   getUserPost,
   getComments,
   likePost,
-  likePostComment,
   commentPost,
   replyPostComment,
   deletePost,
@@ -25,12 +24,12 @@ router.post("/get-user-post/:id", authMiddleware, getUserPost);
 
 //like and comment on posts
 router.post("/comment/:id", authMiddleware, commentPost);
-router.post("/like/:id", authMiddleware, likePost);
-router.post("/like-comment/:id/:rid?", authMiddleware, likePostComment);
+
+router.get("/like/:id", authMiddleware, likePost);
 router.post("/reply-comment/:id", authMiddleware, replyPostComment);
 
 // get comments
-router.get("/comments/:postId", getComments);
+router.post("/comments/:postId", getComments);
 
 //delete post=done
 router.delete("/:id", deletePost);

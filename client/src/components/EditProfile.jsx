@@ -5,10 +5,10 @@ import { useDispatch, useSelector } from "react-redux";
 import TextInput from "./TextInput";
 import Loading from "./Loading";
 import CustomButton from "./CustomButton";
-import { update_user } from "../redux/userSlice";
+import { update_user, user_details } from "../redux/userSlice";
 
 const EditProfile = ({ show, setShow }) => {
-  const { user, userDetails } = useSelector((state) => state.user);
+  const { userData } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const [errMsg, setErrMsg] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -19,22 +19,25 @@ const EditProfile = ({ show, setShow }) => {
     formState: { errors },
   } = useForm({
     mode: "onChange",
-    defaultValues: { ...user },
+    defaultValues: {
+      firstName: userData.firstName || "", // Set default value for firstName from userData
+      lastName: userData.lastName || "",
+      location: userData.location || "",
+      profession: userData.profession || "",
+    },
   });
-
   const onSubmit = async (data) => {
-    console.log(userDetails._id);
     const newData = data;
     const fromData = new FormData();
     fromData.append("firstName", newData?.firstName);
     fromData.append("lastName", newData?.lastName);
     fromData.append("location", newData?.location);
     fromData.append("profession", newData?.profession);
-    fromData.append("userId", userDetails._id);
+    fromData.append("userId", userData._id);
     fromData.append("image", picture);
     dispatch(update_user(fromData));
+    setShow(!show);
   };
-  // firstName, lastName, location, profession, userId
   const handleSelect = (e) => {
     setPicture(e.target.files[0]);
   };

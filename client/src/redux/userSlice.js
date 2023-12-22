@@ -45,6 +45,28 @@ export const get_User = createAsyncThunk("user/get_User", async (userId, { rejec
     return rejectWithValue(error.response.data);
   }
 });
+export const user_details = createAsyncThunk(
+  "user/user_details",
+  async (_, { rejectWithValue, getState }) => {
+    const { token } = getState().user;
+    if (!token) {
+      return rejectWithValue({ message: "Token is missing" });
+    }
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+    try {
+      const { data } = await axios.get(`${baseURL}/user/user-details`, config);
+      return data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
 export const update_user = createAsyncThunk(
   "user/update_user",
   async (info, { rejectWithValue, fulfillWithValue, getState }) => {
@@ -60,6 +82,7 @@ export const update_user = createAsyncThunk(
 
     try {
       const { data } = await axios.put(`${baseURL}/user/update-user`, info, config);
+      console.log(data);
       return fulfillWithValue(data);
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -176,6 +199,7 @@ export const profile_view = createAsyncThunk(
 const storedUser = window?.localStorage.getItem("user");
 const initialState = {
   token: storedUser ? storedUser : null,
+  userData: "",
   edit: false,
   successMessage: "",
   errorMessage: "",
@@ -183,6 +207,7 @@ const initialState = {
   suggetedFriends: "",
   friendRequest: "",
   userDetails: "",
+  pendingRequest: [],
 };
 
 const userSlice = createSlice({
@@ -198,28 +223,71 @@ const userSlice = createSlice({
       state.token = null; // Set the token to null after logout
       state.successMessage = "";
     },
+    RequestPending: (state, { payload }) => {
+      // console.log(payload);
+      state.pendingRequest.push({ requestTo: payload });
+    },
   },
   extraReducers: {
     [user_register.pending]: (state, { payload }) => {
       state.loader = true;
     },
+    [user_register.fulfilled]: (state, { payload }) => {
+      state.loader = false;
+      state.successMessage = payload.message;
+    },
+    [user_register.rejected]: (state, { payload }) => {
+      state.errorMessage = payload.message;
+      state.loader = false;
+    },
+    [user_login.pending]: (state, { payload }) => {
+      state.loader = true;
+    },
     [user_login.fulfilled]: (state, { payload }) => {
       state.successMessage = payload.message;
       state.token = payload.token;
+      state.loader = false;
+    },
+    [user_login.rejected]: (state, { payload }) => {
+      state.errorMessage = payload.message;
+      state.loader = false;
     },
     [get_User.fulfilled]: (state, { payload }) => {
       state.userDetails = payload.user;
     },
     [suggested_friends.fulfilled]: (state, { payload }) => {
       state.suggetedFriends = payload.data;
+      state.pendingRequest = payload.pending;
     },
     [get_friend_request.fulfilled]: (state, { payload }) => {
       state.friendRequest = payload.data;
     },
+    [friend_request.fulfilled]: (state, { payload }) => {
+      state.successMessage = payload.message;
+    },
+    [friend_request.rejected]: (state, { payload }) => {
+      state.errorMessage = payload.message;
+    },
     [accept_request.fulfilled]: (state, { payload }) => {
       state.successMessage = payload.message;
+      state.friendRequest = payload.data;
+    },
+    [user_details.fulfilled]: (state, { payload }) => {
+      state.userData = payload.userData;
+    },
+    [update_user.pending]: (state, { payload }) => {
+      state.loader = true;
+    },
+    [update_user.fulfilled]: (state, { payload }) => {
+      state.loader = false;
+      state.successMessage = payload.message;
+      state.userData = payload.updatauser;
+    },
+    [update_user.rejected]: (state, { payload }) => {
+      state.errorMessage = payload.message;
+      state.loader = false;
     },
   },
 });
-export const { messageClear, logout } = userSlice.actions;
+export const { messageClear, logout, RequestPending } = userSlice.actions;
 export default userSlice.reducer;

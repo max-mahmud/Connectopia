@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
@@ -8,12 +8,13 @@ import { AiOutlineInteraction } from "react-icons/ai";
 import { ImConnection } from "react-icons/im";
 import { CustomButton, Loading, TextInput } from "../components";
 import { BgImage } from "../assets";
-import { user_register } from "../redux/userSlice";
+import { messageClear, user_register } from "../redux/userSlice";
+import { toast } from "react-hot-toast";
 
 const Register = () => {
   const [errMsg, setErrMsg] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { token } = useSelector((state) => state.user);
+  const { token, successMessage, errorMessage } = useSelector((state) => state.user);
   const dispatch = useDispatch();
 
   const {
@@ -29,8 +30,22 @@ const Register = () => {
     dispatch(user_register(data));
   };
 
+  useEffect(() => {
+    if (successMessage) {
+      toast.success(successMessage);
+      dispatch(messageClear());
+    }
+    if (errorMessage) {
+      toast.error(errorMessage);
+      dispatch(messageClear());
+    }
+  }, [successMessage, errorMessage]);
+
   if (token) {
     return <Navigate to={"/"} replace={true} />;
+  }
+  if (successMessage) {
+    return <Navigate to={"/login"} replace={true} />;
   }
 
   return (

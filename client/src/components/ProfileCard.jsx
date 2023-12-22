@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { LiaEditSolid } from "react-icons/lia";
 import { BsBriefcase, BsFacebook, BsInstagram, BsPersonFillAdd } from "react-icons/bs";
 import { FaTwitterSquare } from "react-icons/fa";
@@ -12,9 +12,10 @@ import EditProfile from "./EditProfile";
 
 const ProfileCard = ({ userDetails }) => {
   const [show, setShow] = useState(false);
-  const { edit } = useSelector((state) => state.user);
+  const { userData } = useSelector((state) => state.user);
   const dispatch = useDispatch();
-
+  const { pathname } = useLocation();
+  // console.log(pathname);
   return (
     <div>
       <div className="w-full bg-primary flex flex-col items-center shadow-sm rounded-xl px-6 py-4 ">
@@ -37,22 +38,24 @@ const ProfileCard = ({ userDetails }) => {
           </Link>
 
           <div className="">
-            {userDetails?._id === userDetails?._id ? (
-              <LiaEditSolid
-                onClick={() => setShow(!show)}
-                size={22}
-                className="text-blue hover:text-white cursor-pointer"
-              />
-            ) : (
-              <button className="bg-[#0444a430] text-sm text-white p-1 rounded" onClick={() => {}}>
-                <BsPersonFillAdd size={20} className="text-[#0f52b6]" />
-              </button>
-            )}
+            {
+              pathname == "/" && (
+                <LiaEditSolid
+                  onClick={() => setShow(!show)}
+                  size={22}
+                  className="text-blue hover:text-white cursor-pointer"
+                />
+              ) //: (
+              //   <button className="bg-[#0444a430] text-sm text-white p-1 rounded" onClick={() => {}}>
+              //     <BsPersonFillAdd size={20} className="text-[#0f52b6]" />
+              //   </button>
+              // )
+            }
           </div>
         </div>
 
         {/* ================ */}
-        {show && <EditProfile show={show} setShow={setShow} userId={userDetails?._id} />}
+        {show && <EditProfile show={show} setShow={setShow} />}
         {/* ======================= */}
 
         <div className="w-full flex flex-col gap-2 py-4 border-b border-[#66666645]">

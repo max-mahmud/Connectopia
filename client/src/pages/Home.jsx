@@ -10,33 +10,44 @@ import {
   TextInput,
   TopBar,
 } from "../components";
-import { suggest, requests } from "../assets/data";
 import { Link } from "react-router-dom";
 import { NoProfile } from "../assets";
 import { BsFiletypeGif, BsPersonFillAdd } from "react-icons/bs";
+import { FaUserCheck } from "react-icons/fa";
 import { BiImages, BiSolidVideo } from "react-icons/bi";
 import { useForm } from "react-hook-form";
 import {
+  RequestPending,
   accept_request,
   friend_request,
   get_User,
   get_friend_request,
+  messageClear,
   suggested_friends,
+  user_details,
 } from "../redux/userSlice";
-import { create_post, get_posts } from "../redux/postSlice";
+import { PostmessageClear, create_post, get_posts } from "../redux/postSlice";
+import { toast } from "react-hot-toast";
 
 const Home = () => {
-  const { userDetails, edit, suggetedFriends, friendRequest } = useSelector((state) => state.user);
-  const { posts } = useSelector((state) => state.posts);
-  // const [status, setStatus] = useState("");
+  const {
+    userDetails,
+    userData,
+    pendingRequest,
+    edit,
+    suggetedFriends,
+    friendRequest,
+    successMessage,
+    errorMessage,
+  } = useSelector((state) => state.user);
+  const { posts, postSuccess, postError, loader } = useSelector((state) => state.posts);
   const dispatch = useDispatch();
   const [errMsg, setErrMsg] = useState("");
   const [file, setFile] = useState(null);
-  const [posting, setPosting] = useState(false);
-  const [loading, setLoading] = useState(false);
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm();
 
@@ -50,17 +61,48 @@ const Home = () => {
     fromData.append("description", newData?.description);
     fromData.append("image", file);
     dispatch(create_post(fromData));
+    reset();
+    setFile(null);
   };
 
   useEffect(() => {
     dispatch(get_posts());
     dispatch(suggested_friends());
     dispatch(get_friend_request());
-  }, []);
+    dispatch(user_details());
+  }, [dispatch, friend_request]);
 
-  // useEffect(() => {
-  //   dispatch(friend_request({ requestTo: requestId }));
-  // }, [requestId, setrequestId, dispatch]);
+  useEffect(() => {
+    if (successMessage) {
+      toast.success(successMessage);
+      dispatch(messageClear());
+    }
+    if (errorMessage) {
+      toast.error(errorMessage);
+      dispatch(messageClear());
+    }
+  }, [successMessage, dispatch, errorMessage]);
+
+  useEffect(() => {
+    if (postSuccess) {
+      toast.success(postSuccess);
+      dispatch(get_posts());
+      dispatch(PostmessageClear());
+    }
+    if (postError) {
+      toast.error(postError);
+      dispatch(PostmessageClear());
+    }
+  }, [postSuccess, postError, dispatch]);
+  let filterFriend = [];
+  // useEffect(())
+  filterFriend = pendingRequest?.map((item, i) => item?.requestTo);
+
+  const handleFriendRequest = (id) => {
+    dispatch(friend_request({ requestTo: id }));
+    dispatch(RequestPending(id));
+  };
+
   return (
     <>
       <div className="w-full px-0 lg:px-10 md:pb-12 pb-2 2xl:px-40 bg-bgColor lg:rounded-lg h-screen overflow-hidden">
@@ -68,7 +110,7 @@ const Home = () => {
         <div className="w-full flex gap-2 lg:gap-4 pt-2 pb-10 h-full">
           {/* LEFT SIDE*/}
           <div className="hidden w-1/3 lg:w-1/4 h-full md:flex flex-col gap-6 overflow-y-auto">
-            <ProfileCard userDetails={userDetails} />
+            <ProfileCard userDetails={userData} />
             <FriendsCard friends={userDetails?.friends} />
           </div>
 
@@ -123,14 +165,14 @@ const Home = () => {
                   className="flex items-center gap-1 text-base text-ascent-2 hover:text-ascent-1 cursor-pointer"
                   htmlFor="videoUpload"
                 >
-                  <input
+                  {/* <input
                     type="file"
                     data-max-size="5120"
                     onChange={(e) => setFile(e.target.files[0])}
                     className="hidden"
                     id="videoUpload"
                     accept=".mp4, .wav"
-                  />
+                  /> */}
                   <BiSolidVideo />
                   <span>Video</span>
                 </label>
@@ -139,44 +181,49 @@ const Home = () => {
                   className="flex items-center gap-1 text-base text-ascent-2 hover:text-ascent-1 cursor-pointer"
                   htmlFor="vgifUpload"
                 >
-                  <input
+                  {/* <input
                     type="file"
                     data-max-size="5120"
                     onChange={(e) => setFile(e.target.files[0])}
                     className="hidden"
                     id="vgifUpload"
                     accept=".gif"
-                  />
+                  /> */}
                   <BsFiletypeGif />
                   <span>Gif</span>
                 </label>
 
                 <div>
-                  {posting ? (
-                    <Loading />
-                  ) : (
-                    <CustomButton
-                      type="submit"
-                      title="Post"
-                      containerStyles="bg-[#0444a4] text-white py-1 px-6 rounded-full font-semibold text-sm"
-                    />
-                  )}
+                  <CustomButton
+                    type="submit"
+                    title="Post"
+                    containerStyles="bg-[#0444a4] text-white py-1 px-6 rounded-full font-semibold text-sm"
+                  />
                 </div>
               </div>
             </form>
-
-            {loading ? (
-              <Loading />
-            ) : posts?.length > 0 ? (
-              posts?.map((post) => (
-                <PostCard
-                  key={post?._id}
-                  post={post}
-                  user={userDetails}
-                  deletePost={() => {}}
-                  likePost={() => {}}
-                />
-              ))
+            {file && (
+              <div>
+                <img className="w-full mt-2 rounded-lg" src={URL.createObjectURL(file)} alt="" />
+              </div>
+            )}
+            {posts?.length > 0 ? (
+              <>
+                {loader && (
+                  <div className="mb-2 bg-primary p-4 rounded-xl">
+                    <Loading />
+                  </div>
+                )}
+                {posts?.map((post) => (
+                  <PostCard
+                    key={post?._id}
+                    userData={userData}
+                    post={post}
+                    loader={loader}
+                    user={userDetails}
+                  />
+                ))}
+              </>
             ) : (
               <div className="flex w-full h-full items-center justify-center">
                 <p className="text-lg text-ascent-2">No Post Available</p>
@@ -263,13 +310,22 @@ const Home = () => {
                           </div>
                         </Link>
 
-                        <div className="flex gap-1">
-                          <button
-                            className="bg-[#0444a430] text-sm text-white p-1 rounded"
-                            onClick={() => dispatch(friend_request({ requestTo: friend?._id }))}
-                          >
-                            <BsPersonFillAdd size={20} className="text-[#0f52b6]" />
-                          </button>
+                        <div className="flex gap-1 ">
+                          {filterFriend?.includes(friend?._id) ? (
+                            <button
+                              className="bg-[#0c661181] text-sm text-white p-1 rounded"
+                              // onClick={() => dispatch(friend_request({ requestTo: friend?._id }))}
+                            >
+                              <FaUserCheck size={20} className="text-[#f2f3f5]" />
+                            </button>
+                          ) : (
+                            <button
+                              className="bg-[#0444a430]  text-sm text-white p-1 rounded"
+                              onClick={() => handleFriendRequest(friend?._id)}
+                            >
+                              <BsPersonFillAdd size={20} className="text-[#0f52b6]" />
+                            </button>
+                          )}
                         </div>
                       </div>
                     ))

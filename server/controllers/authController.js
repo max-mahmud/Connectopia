@@ -6,19 +6,16 @@ export const register = async (req, res, next) => {
 
   //validate fileds
   if (!(firstName || lastName || email || password)) {
-    next("Provide Required Fields!");
-    return;
+    return res.status(401).send({ message: "Please Provide All Fields" });
   }
   if (password.length < 6) {
-    next("password length 6 must");
-    return;
+    return res.status(401).send({ message: "password length 6 must " });
   }
   try {
     const userExist = await Users.findOne({ email });
 
     if (userExist) {
-      next("Email Address already exists");
-      return;
+      return res.status(401).send({ message: "Email Address already exists" });
     }
 
     const hashedPassword = await hashString(password);
@@ -42,7 +39,7 @@ export const login = async (req, res, next) => {
   try {
     //validation
     if (!email || !password) {
-      next("Please Provide User Credentials");
+      res.status(401).send({ message: "Please Provide User Credentials" });
       return;
     }
 
@@ -50,16 +47,14 @@ export const login = async (req, res, next) => {
     const user = await Users.findOne({ email }).select("+password");
 
     if (!user) {
-      next("Invalid email or password");
-      return;
+      return res.status(401).send({ message: "User not found " });
     }
 
     // compare password
     const isMatch = await compareString(password, user?.password);
 
     if (!isMatch) {
-      next("Invalid email or password");
-      return;
+      return res.status(401).send({ message: "Password Not match" });
     }
 
     user.password = undefined;

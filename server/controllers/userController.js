@@ -6,6 +6,16 @@ import formidable from "formidable";
 
 const { ObjectId } = mongoose.Types;
 
+export const userDetails = async (req, res) => {
+  const userId = req.user.userId;
+  try {
+    const user = await Users.findById(userId).select("-password").lean().exec();
+    return res.status(200).json({ userData: user });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 export const getUser = async (req, res, next) => {
   try {
     const userId = req.user.userId;
@@ -70,31 +80,50 @@ export const updateUser = async (req, res, next) => {
         secure: true,
       });
       try {
-        const result = await cloudinary.uploader.upload(image[0].filepath, {
-          folder: "socials",
-        });
-        const updateUser = {
-          firstName: firstName[0],
-          lastName: lastName[0],
-          location: location[0],
-          profileUrl: result.url,
-          profession: profession[0],
-          _id: userId[0],
-        };
+        if (image) {
+          const result = await cloudinary.uploader.upload(image[0].filepath, {
+            folder: "socials",
+          });
+          const updateUser = {
+            firstName: firstName[0],
+            lastName: lastName[0],
+            location: location[0],
+            profileUrl: result.url,
+            profession: profession[0],
+            _id: userId[0],
+          };
 
-        if (result) {
+          if (result) {
+            const user = await Users.findByIdAndUpdate(userId, updateUser, {
+              new: true,
+            });
+            res.status(200).json({
+              sucess: true,
+              message: "User updated successfully",
+              updatauser: user,
+            });
+          } else {
+            res.status(400).json({
+              sucess: false,
+              message: "Image upload failed",
+            });
+          }
+        } else {
+          const updateUser = {
+            firstName: firstName[0],
+            lastName: lastName[0],
+            location: location[0],
+            profession: profession[0],
+            _id: userId[0],
+          };
+
           const user = await Users.findByIdAndUpdate(userId, updateUser, {
             new: true,
           });
           res.status(200).json({
             sucess: true,
             message: "User updated successfully",
-            user,
-          });
-        } else {
-          res.status(400).json({
-            sucess: false,
-            message: "Image upload failed",
+            updatauser: user,
           });
         }
       } catch (error) {
@@ -119,20 +148,16 @@ export const friendRequest = async (req, res, next) => {
       requestFrom: userId,
       requestTo,
     });
-
     if (requestExist) {
-      next("Friend Request already sent.");
-      return;
+      return res.status(401).send({ message: "Already sent Request" });
     }
 
     const accountExist = await FriendRequest.findOne({
       requestFrom: requestTo,
       requestTo: userId,
     });
-
     if (accountExist) {
-      next("Friend Request already sent.");
-      return;
+      return res.status(401).send({ message: "Already sent Requestt" });
     }
 
     const newRes = await FriendRequest.create({
@@ -153,7 +178,7 @@ export const friendRequest = async (req, res, next) => {
     });
   }
 };
-
+// get friend request=========
 export const getFriendRequest = async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -217,10 +242,24 @@ export const acceptRequest = async (req, res, next) => {
     if (status === "Accepted" || status === "Denied") {
       await FriendRequest.findByIdAndDelete(rid);
     }
+    //find request again
+    const request = await FriendRequest.find({
+      requestTo: id,
+      requestStatus: "Pending",
+    })
+      .populate({
+        path: "requestFrom",
+        select: "firstName lastName profileUrl profession -password",
+      })
+      .limit(10)
+      .sort({
+        _id: -1,
+      });
 
     res.status(201).json({
       success: true,
       message: `Friend Request ${status}`,
+      data: request,
     });
   } catch (error) {
     console.log(error);
@@ -259,20 +298,25 @@ export const profileViews = async (req, res, next) => {
 export const suggestedFriends = async (req, res) => {
   try {
     const userId = req.user.userId;
+    // requestFrom: requestTo,
+    const accountExist = await FriendRequest.find({
+      requestFrom: userId,
+    }).select("requestTo");
 
+    let alreadyFriend = await Users.findById(userId);
     let queryObject = {};
     queryObject._id = { $ne: userId }; //not equal ($ne)
-    queryObject.friends = { $nin: userId }; //does not contain ($nin: not in)
+    queryObject.friends = { $nin: alreadyFriend.friends }; //does not contain ($nin: not in)
 
-    let queryResult = Users.find(queryObject)
+    let queryResult = await Users.find(queryObject)
       .limit(15)
       .select("firstName lastName profileUrl profession -password");
 
-    const suggestedFriends = await queryResult;
-
+    // console.log(queryResult);
     res.status(200).json({
       success: true,
-      data: suggestedFriends,
+      data: queryResult,
+      pending: accountExist,
     });
   } catch (error) {
     console.log(error);
