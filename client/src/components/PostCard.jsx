@@ -169,7 +169,7 @@ const PostCard = ({ post, user, loader, userData }) => {
               <span className="text-ascent-2">{post?.userId?.location}</span>
             </div>
 
-            <span className="text-ascent-2">{moment(post?.createdAt ?? "2023-05-25").fromNow()}</span>
+            <span className="text-ascent-2">{moment(post?.createdAt ?? "2023-12-25").fromNow()}</span>
           </div>
         </div>
 
@@ -256,7 +256,7 @@ const PostCard = ({ post, user, loader, userData }) => {
                         </p>
                       </Link>
                       <span className="text-ascent-2 text-sm">
-                        {moment(comment?.createdAt ?? "2023-12-20").fromNow()}
+                        {moment(comment?.createdAt ?? "2023-12-25").fromNow()}
                       </span>
                     </div>
                   </div>
