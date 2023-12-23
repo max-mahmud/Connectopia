@@ -10,9 +10,9 @@ const Profile = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const { userDetails } = useSelector((state) => state.user);
-  const { UserPost } = useSelector((state) => state.posts);
+  const { UserPost, postLoader } = useSelector((state) => state.posts);
   // const [userInfo, setUserInfo] = useState(userDetails);
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
 
   const handleDelete = () => {};
   const handleLikePost = () => {};
@@ -39,7 +39,7 @@ const Profile = () => {
 
           {/* CENTER */}
           <div className=" flex-1 h-full bg-orimary px-4 flex flex-col gap-6 overflow-y-auto">
-            {loading ? (
+            {postLoader ? (
               <Loading />
             ) : UserPost?.length > 0 ? (
               UserPost?.map((post) => (

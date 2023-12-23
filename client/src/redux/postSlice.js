@@ -177,6 +177,7 @@ const initialState = {
   UserPost: [],
   comments: [],
   loader: false,
+  postLoader: false,
   postSuccess: "",
   postError: "",
 };
@@ -214,11 +215,25 @@ const postSlice = createSlice({
       state.loader = false;
       state.postError = payload.message;
     },
+    [get_posts.pending]: (state, { payload }) => {
+      state.postLoader = true;
+    },
     [get_posts.fulfilled]: (state, { payload }) => {
       state.posts = payload.data;
+      state.postLoader = false;
+    },
+    [get_posts.rejected]: (state, { payload }) => {
+      state.postLoader = false;
+    },
+    [get_post.pending]: (state, { payload }) => {
+      state.postLoader = true;
     },
     [get_post.fulfilled]: (state, { payload }) => {
       state.UserPost = payload.data;
+      state.postLoader = false;
+    },
+    [get_post.rejected]: (state, { payload }) => {
+      state.postLoader = false;
     },
     [comment_post.pending]: (state, { payload }) => {
       // state.loader = true;
