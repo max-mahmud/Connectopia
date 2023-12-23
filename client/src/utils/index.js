@@ -4,6 +4,6 @@
 // });
 // export default api;
 
-const baseURL = `http://localhost:8800`;
+const baseURL = `https://cannecto.onrender.com`;
 
 export { baseURL };

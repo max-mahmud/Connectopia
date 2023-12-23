@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { TbSocial } from "react-icons/tb";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import TextInput from "./TextInput";
 import CustomButton from "./CustomButton";
 import { useForm } from "react-hook-form";
@@ -13,6 +13,7 @@ import { logout } from "./../redux/userSlice";
 import { get_posts } from "../redux/postSlice";
 
 const TopBar = ({ search }) => {
+  const navigate = useNavigate();
   const { theme } = useSelector((state) => state.theme);
   const { token, successMessage } = useSelector((state) => state.user);
   const [open, setOpen] = useState(false);
@@ -34,6 +35,11 @@ const TopBar = ({ search }) => {
     dispatch(get_posts(newData));
   };
 
+  const handleNavigate = () => {
+    const newPath = "/message"; 
+    navigate(newPath,);
+  };
+
   useEffect(() => {
     if (!token) {
       <Navigate to={"/login"} replace={true} />;
@@ -41,9 +47,9 @@ const TopBar = ({ search }) => {
   }, [successMessage, dispatch]);
 
   return (
-    <div className="topbar w-full flex items-center justify-between py-2 md:py-4 px-4 bg-primary">
-      <Link to="/" className="flex gap-2 items-center">
-        <div className="p-1 md:p-2 bg-[#065ad8] rounded text-white">
+    <div className="topbar w-full flex items-center justify-between md:py-4 px-4  bg-primary">
+      <Link to="/" className="flex gap-2 items-center py-[8px]">
+        <div className=" md:p-2 bg-[#065ad8] rounded text-white">
           <TbSocial />
         </div>
         <span className="text-xl md:text-2xl text-[#065ad8] font-semibold">Connectopia</span>
@@ -58,7 +64,7 @@ const TopBar = ({ search }) => {
           <CustomButton
             title="Search"
             type="submit"
-            containerStyles="bg-[#0444a4] text-white px-6 py-[11px] mt-2 rounded-r-full"
+            containerStyles="bg-[#0444a4] text-white px-6 mt-2 py-[11px] rounded-r-full"
           />
         </form>
       )}
@@ -76,9 +82,9 @@ const TopBar = ({ search }) => {
           <div className="absolute top-16 right-8 w-[220px] h-[220px] rounded-md  flex flex-col gap-6 bg-primary shadow-lg shadow-[#353434] items-center justify-center text-ascent-1 text-md md:text-xl">
             <button onClick={() => handleTheme()}>{theme ? <BsMoon /> : <BsSunFill />}</button>
 
-            <Link to="/message" className="text-ascent-1">
+            <button onClick={handleNavigate} className="text-ascent-1">
               <FaRegMessage />
-            </Link>
+            </button>
 
             <div>
               <CustomButton

@@ -77,8 +77,12 @@ const chatSlice = createSlice({
       state.successMessage = payload.msg;
       state.newMsg = payload.newMessage;
     },
+    [get_msg.pending]: (state, { payload }) => {
+      state.loader = true
+    },
     [get_msg.fulfilled]: (state, { payload }) => {
       state.message = payload.msg;
+      state.loader= false
     },
   },
 });

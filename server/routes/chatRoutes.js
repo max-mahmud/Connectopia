@@ -7,6 +7,6 @@ const router = express.Router();
 
 router.post("/send-message", authMiddleware, send_friend_msg);
 router.get("/get-message/:id", authMiddleware, get_message);
-router.post("/watch-message/", watch_msg);
+router.post("/watch-message", watch_msg);
 
 export default router;
