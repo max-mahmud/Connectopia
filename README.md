@@ -1,1 +1,1 @@
-Live Link => https://mern-connectopia.netlify.app/
+Live Link => https://mern-canacto.netlify.app
