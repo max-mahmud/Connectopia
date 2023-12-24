@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation } from "react-router-dom";
 import { LiaEditSolid } from "react-icons/lia";
-import { BsBriefcase, BsFacebook, BsInstagram, BsPersonFillAdd } from "react-icons/bs";
+import { BsBriefcase, BsFacebook, BsInstagram } from "react-icons/bs";
+import { RxCross2 } from "react-icons/rx";
 import { FaTwitterSquare } from "react-icons/fa";
 import { CiLocationOn } from "react-icons/ci";
 import moment from "moment";
@@ -10,7 +11,7 @@ import { NoProfile } from "../assets";
 import { get_User } from "../redux/userSlice";
 import EditProfile from "./EditProfile";
 
-const ProfileCard = ({ userDetails }) => {
+const ProfileCard = ({ userDetails, setopen }) => {
   const [show, setShow] = useState(false);
   const { userData } = useSelector((state) => state.user);
   const dispatch = useDispatch();
@@ -19,6 +20,12 @@ const ProfileCard = ({ userDetails }) => {
   return (
     <div>
       <div className="w-full bg-primary flex flex-col items-center shadow-sm rounded-xl px-6 py-4 ">
+        <span
+          onClick={() => setopen(false)}
+          className="absolute md:hidden top-1 right-1 text-2xl p-1 text-ascent-1"
+        >
+          <RxCross2 />
+        </span>
         <div className="w-full flex items-center justify-between border-b pb-5 border-[#66666645]">
           <Link to={"/profile/" + userDetails?._id} className="flex gap-2">
             <img

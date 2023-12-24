@@ -13,8 +13,8 @@ import { toast } from "react-hot-toast";
 
 const Login = ({ token }) => {
   const [errMsg, setErrMsg] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { successMessage, errorMessage } = useSelector((state) => state.user);
+  // const [isSubmitting, setIsSubmitting] = useState(false);
+  const { successMessage, errorMessage, loader } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const {
     register,
@@ -99,7 +99,7 @@ const Login = ({ token }) => {
               </span>
             )}
 
-            {isSubmitting ? (
+            {loader ? (
               <Loading />
             ) : (
               <CustomButton

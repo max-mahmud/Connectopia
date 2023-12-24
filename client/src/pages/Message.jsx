@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Loading, TopBar } from "../components";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useLocation, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { NoProfile } from "../assets";
 import { FaPlus } from "react-icons/fa";
 import { MdEmojiEmotions } from "react-icons/md";
 import { BiSend } from "react-icons/bi";
+import { GoMultiSelect } from "react-icons/go";
 import io from "socket.io-client";
 import { get_User } from "../redux/userSlice";
 import { get_msg, messageClear, myUpdateMessage, send_message, updateMessage } from "./../redux/chatReducer";
@@ -20,6 +21,7 @@ const Message = () => {
   const { message, successMessage, newMsg, loader } = useSelector((state) => state.chat);
   const [activeFriend, setActiveFriend] = useState([]);
   const [scrollContainerRef, setScrollContainerRef] = useState(null);
+  const [open, setOpen] = useState(false);
   let search = "abc";
   const [text, setText] = useState("");
 
@@ -97,19 +99,24 @@ const Message = () => {
     }
   }, [receverMessage]);
   return (
-    <div className="w-full  px-0 lg:px-10 md:pb-12 pb-2 2xl:px-40 bg-bgColor lg:rounded-lg h-screen overflow-hidden">
+    <div className="w-full  px-0 px-2 lg:px-10 md:pb-12 pb-2 2xl:px-40 bg-bgColor lg:rounded-lg h-screen overflow-hidden">
       <div className="h-[17vh]">
         <TopBar search={search} />
       </div>
 
-      <div className="w-full  flex gap-2 lg:gap-4 pb-7 h-[80vh] " ref={messageEndRef}>
+      <div className="w-full  flex gap-2 lg:gap-4 pb-7 h-[80vh] relative" ref={messageEndRef}>
         {/* ==Left== */}
-        <div className="hidden w-1/3 lg:w-1/4 h-[80vh] p-5 md:flex flex-col gap-6 overflow-y-auto bg-primary mt-2">
+        <div
+          className={` ${
+            open ? "absolute top-[0px] left-0 w-[280px] bg-secondary z-50" : "hidden"
+          } md:static md:w-1/3 lg:w-1/4 h-[80vh] p-5 md:flex flex-col gap-6 overflow-y-auto bg-primary mt-2`}
+        >
           {userDetails?.friends?.map((frnd, i) => (
             <Link
+              onClick={() => setOpen(false)}
               to={"/message/" + frnd?._id}
               key={frnd?._id}
-              className="w-full flex gap-4 items-center cursor-pointer "
+              className="w-full flex gap-4 items-center cursor-pointer mt-2 md:mt-0"
             >
               <div className="relative">
                 <img
@@ -135,24 +142,29 @@ const Message = () => {
           <div
             id="message-container"
             style={{ overflowAnchor: "none" }}
-            className="flex-1  w-full h-[80vh] p-5 flex flex-col gap-4 overflow-y-auto rounded-lg bg-primary m-2"
+            className="flex-1  w-full h-[80vh] px-5 py-2 flex flex-col gap-4 overflow-y-auto rounded-lg bg-primary m-2"
           >
-            <h2 className=" w-[200px] py-1">
+            <div className=" w-full  py-1">
               {userDetails?.friends?.map((item) =>
                 item._id === id ? (
-                  <div className="flex gap-2 items-center text-lg text-ascent-1 font-medium">
-                    <img
-                      className="w-10 h-10 object-cover rounded-full"
-                      src={item.profileUrl ? item.profileUrl : NoProfile}
-                      alt="img"
-                    />
-                    {item.firstName}
+                  <div className="flex w-full justify-between items-center text-lg text-ascent-1 font-medium">
+                    <div className="flex gap-2">
+                      <img
+                        className="w-10 h-10 object-cover rounded-full"
+                        src={item.profileUrl ? item.profileUrl : NoProfile}
+                        alt="img"
+                      />
+                      {item.firstName}
+                    </div>
+                    <span onClick={() => setOpen(!open)} className="bg-bgColor text-2xl p-1 md:hidden ">
+                      <GoMultiSelect />
+                    </span>
                   </div>
                 ) : (
                   ""
                 )
               )}
-            </h2>
+            </div>
             {loader ? (
               <div className="h-[80vh]">
                 <Loading />
@@ -231,9 +243,15 @@ const Message = () => {
           </div>
         ) : (
           <div
-            className={`mt-2 flex-1  w-full h-[80vh] p-5 bg-primary pb-7  text-ascent-1 text-2xl flex justify-center items-center`}
+            className={`mt-2 flex-1  w-full h-[80vh] p-5 bg-primary pb-7  text-ascent-1 text-2xl flex justify-center items-center relative`}
           >
             <h4>Select A friend First</h4>
+            <span
+              onClick={() => setOpen(!open)}
+              className="absolute top-1 right-1 bg-bgColor text-2xl p-1 md:hidden "
+            >
+              <GoMultiSelect />
+            </span>
           </div>
         )}
       </div>

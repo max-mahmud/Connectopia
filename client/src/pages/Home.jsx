@@ -105,7 +105,7 @@ const Home = () => {
 
   return (
     <>
-      <div className="w-full px-0 lg:px-10 md:pb-12 pb-2 2xl:px-40 bg-bgColor lg:rounded-lg h-screen overflow-hidden">
+      <div className="w-full px-3 md:px-4 lg:px-10 md:pb-12 pb-2 2xl:px-40 bg-bgColor lg:rounded-lg h-screen overflow-hidden">
         <TopBar />
         <div className="w-full flex gap-2 lg:gap-4 pt-2 pb-10 h-full">
           {/* LEFT SIDE*/}
